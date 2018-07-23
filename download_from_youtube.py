@@ -11,11 +11,27 @@ choose_va = ''
 while(choose_va.lower() not in ['v','video','a','audio']):
     choose_va = input('Download video or audio (write v or a). Write quit or q to exit: ')
     if choose_va.lower() == 'v' or choose_va.lower() == 'video':
+        tag_res = {}
+        num = 0
+        for elem in yt.streams.filter(type='video').filter(subtype='mp4').all():
+            first_dq = str(elem).find('"',str(elem).find('itag='))+1
+            second_dq = str(elem).find('"', first_dq)
+            itag = str(elem)[first_dq:second_dq]
+            first_dq = str(elem).find('"',str(elem).find('res='))+1
+            second_dq = str(elem).find('"', first_dq)
+            res = str(elem)[first_dq:second_dq]
+            num += 1
+            tag_res[num] = [itag, res]
+        print('Choose resolution: ')
+        for key in tag_res:
+            print(str(key) + ': ' + tag_res[key][1])
+        choose_res = -1
+        while(int(choose_res) < 1 or int(choose_res) > len(tag_res)):
+            choose_res = input('Write from 1 to ' + str(len(tag_res)) + ' to choose resolution: ')
         print('Start downloading video: ')
-        #yt.streams.filter(type='video').filter(subtype='mp4').get_by_itag(22).download()
-        yt.streams.first().download()
+        yt.streams.get_by_itag(int(tag_res[int(choose_res)][0])).download()
     elif choose_va.lower() == 'a' or choose_va.lower() == 'audio':
-        print('Start downloading audio: ')
+        print('Start downloading audio(It will take some time): ')
         yt.streams.filter(type='audio').filter(subtype='mp4').first().download()
         os.rename(path + title + '.mp4', path + title + '.mp3')
     elif choose_va.lower() == 'q' or choose_va.lower() == 'quit':
